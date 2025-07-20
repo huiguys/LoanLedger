@@ -1,7 +1,3 @@
-# LoanLedgerOf course. Here is a professional and well-structured `README.md` file for your LoanLedger project. You can copy and paste this directly into a new file named `README.md` in the root of your project folder.
-
------
-
 # LoanLedger 💸
 
 LoanLedger is a modern, full-stack web application designed to help you effortlessly track loans and payments. Built with a powerful backend and a responsive user interface, it provides a secure and intuitive way to manage personal and small-scale lending.
@@ -106,16 +102,6 @@ You need to have **two terminals** open to run both the frontend and backend ser
       * Enter the OTP and set a secure password to complete registration.
 3.  **Login** with your newly created credentials.
 4.  Start adding people and tracking your loans\!
-
------
-
-## 🖼️ Screenshots
-
-*(You can add screenshots of your application here to give a visual overview.)*
-
-| Dashboard                               | Person Profile                          |
-| --------------------------------------- | --------------------------------------- |
-| |   |
 
 -----
 
