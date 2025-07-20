@@ -1,187 +1,124 @@
-# LoanLeger Authentication Server
+Of course. Here is a professional and well-structured `README.md` file for your LoanLedger project. You can copy and paste this directly into a new file named `README.md` in the root of your project folder.
 
-A secure authentication system with mobile OTP verification and password-based login.
+-----
 
-## Features
+# LoanLedger 💸
 
-- 📱 Mobile number + OTP verification
-- 🔐 Mobile number + password login
-- 🛡️ JWT token authentication with refresh tokens
-- ⚡ Rate limiting for security
-- 🔒 Password hashing with bcrypt
-- ✅ Input validation and sanitization
-- 📊 Session management
-- 🔄 Secure password reset flow
+LoanLedger is a modern, full-stack web application designed to help you effortlessly track loans and payments. Built with a powerful backend and a responsive user interface, it provides a secure and intuitive way to manage personal and small-scale lending.
 
-## API Endpoints
+-----
 
-### Authentication Routes
+## ✨ Key Features
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/auth/register` | Register new user with mobile number |
-| POST | `/api/auth/send-otp` | Send OTP to mobile number |
-| POST | `/api/auth/verify-otp` | Verify OTP and complete registration |
-| POST | `/api/auth/login` | Login with mobile number and password |
-| POST | `/api/auth/set-password` | Set password after OTP verification |
-| POST | `/api/auth/reset-password` | Reset password using OTP |
-| POST | `/api/auth/refresh-token` | Refresh access token |
-| POST | `/api/auth/logout` | Logout and invalidate tokens |
-| GET | `/api/auth/profile` | Get user profile (protected) |
+  * **Secure User Authentication**: Complete registration and login system with mobile number and OTP verification.
+  * **Comprehensive Loan Tracking**: Add, view, and manage loans you've given or taken.
+  * **Detailed Payment Management**: Record principal and interest payments for each loan with multiple payment methods.
+  * **Person-Centric View**: See a complete financial summary and loan history for each person you transact with.
+  * **Settlement Feature**: Mark loans as fully paid and "closed" once the balance is cleared.
+  * **Clean & Responsive UI**: A modern user interface built with React and Tailwind CSS that works on any device.
 
-## Installation
+-----
 
-1. **Install dependencies:**
-   ```bash
-   cd server
-   npm install
-   ```
+## 🛠️ Tech Stack
 
-2. **Set up environment variables:**
-   ```bash
-   cp .env.example .env
-   # Edit .env with your configuration
-   ```
+This project is built with a modern and robust technology stack:
 
-3. **Start the server:**
-   ```bash
-   # Development
-   npm run dev
-   
-   # Production
-   npm start
-   ```
+| **Area** | **Technology** |
+| ----------- | ---------------------- |
+| **Frontend**| React, Vite, TypeScript, Tailwind CSS |
+| **Backend** | Node.js, Express.js |
+| **Database**| Better-sqlite3         |
+| **Auth** | JWT (JSON Web Tokens), bcrypt |
+| **Tooling** | Git, Nodemon, Postman  |
 
-## Database Schema
+-----
 
-The system uses SQLite with the following tables:
+## 🚀 Getting Started
 
-- **users**: User accounts with mobile numbers and passwords
-- **otps**: OTP verification codes with expiry
-- **sessions**: JWT refresh token sessions
+Follow these instructions to get a copy of the project up and running on your local machine for development and testing purposes.
 
-## Security Features
+### **Prerequisites**
 
-### Rate Limiting
-- OTP requests: 3 per 15 minutes per IP+mobile
-- Login attempts: 5 per 15 minutes per IP
-- Registration: 3 per hour per IP
-- General API: 100 per 15 minutes per IP
+  * [Node.js](https://nodejs.org/en/) (v16 or later recommended)
+  * [Git](https://git-scm.com/)
 
-### Password Security
-- Minimum 6 characters
-- Must contain uppercase, lowercase, and number
-- Hashed with bcrypt (12 salt rounds)
+### **Installation & Setup**
 
-### Token Security
-- Access tokens: 15 minutes expiry
-- Refresh tokens: 7 days expiry
-- Secure token storage in database
+1.  **Clone the repository** to your local machine:
 
-### Input Validation
-- Mobile number format validation
-- OTP format validation
-- Password strength requirements
-- SQL injection prevention
+    ```sh
+    git clone https://github.com/huiguys/LoanLedger.git
+    cd LoanLedger
+    ```
 
-## Usage Examples
+2.  **Set up the Backend Server**:
 
-### 1. Register New User
-```bash
-curl -X POST http://localhost:3001/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{"mobileNumber": "9876543210"}'
-```
+    ```sh
+    cd server
+    npm install
+    ```
 
-### 2. Verify OTP
-```bash
-curl -X POST http://localhost:3001/api/auth/verify-otp \
-  -H "Content-Type: application/json" \
-  -d '{"mobileNumber": "9876543210", "otp": "123456"}'
-```
+    Create a `.env` file in the `server` directory and add your JWT secret:
 
-### 3. Set Password
-```bash
-curl -X POST http://localhost:3001/api/auth/set-password \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
-  -d '{"password": "SecurePass123"}'
-```
+    ```
+    JWT_SECRET=your-super-secret-key-that-is-long-and-random
+    ```
 
-### 4. Login with Password
-```bash
-curl -X POST http://localhost:3001/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"mobileNumber": "9876543210", "password": "SecurePass123"}'
-```
+3.  **Set up the Frontend Application**:
+    Navigate back to the root directory and then install the frontend dependencies.
 
-## Response Format
+    ```sh
+    cd ..
+    npm install
+    ```
 
-All API responses follow this structure:
+### **Running the Application**
 
-```json
-{
-  "success": true|false,
-  "message": "Response message",
-  "data": {
-    // Response data
-  },
-  "errors": [
-    // Validation errors (if any)
-  ]
-}
-```
+You need to have **two terminals** open to run both the frontend and backend servers simultaneously.
 
-## Error Handling
+1.  **Start the Backend Server**:
+    In your first terminal, from the `server` directory:
 
-The API returns appropriate HTTP status codes:
+    ```sh
+    npm run dev
+    ```
 
-- `200`: Success
-- `201`: Created
-- `400`: Bad Request (validation errors)
-- `401`: Unauthorized
-- `403`: Forbidden
-- `404`: Not Found
-- `409`: Conflict (user already exists)
-- `429`: Too Many Requests (rate limited)
-- `500`: Internal Server Error
+    The server will start on `http://localhost:3001`.
 
-## Production Deployment
+2.  **Start the Frontend Application**:
+    In your second terminal, from the project's root directory:
 
-1. **Environment Variables:**
-   - Set strong JWT secrets (min 32 characters)
-   - Configure SMS service credentials
-   - Set appropriate CORS origins
+    ```sh
+    npm run dev
+    ```
 
-2. **Database:**
-   - Consider PostgreSQL/MySQL for production
-   - Set up database backups
-   - Configure connection pooling
+    The application will be available at `http://localhost:5173`.
 
-3. **Security:**
-   - Use HTTPS in production
-   - Set up proper firewall rules
-   - Monitor for suspicious activity
-   - Regular security updates
+-----
 
-4. **SMS Integration:**
-   - Integrate with Twilio, AWS SNS, or similar
-   - Handle SMS delivery failures
-   - Monitor SMS costs and usage
+## 📖 How to Use
 
-## Development
+1.  **Open the application** in your browser at `http://localhost:5173`.
+2.  **Register a new account**:
+      * Click "Create New Account".
+      * Enter your 10-digit mobile number and click "Send OTP".
+      * Check your backend server's terminal for the 6-digit OTP.
+      * Enter the OTP and set a secure password to complete registration.
+3.  **Login** with your newly created credentials.
+4.  Start adding people and tracking your loans\!
 
-```bash
-# Install dependencies
-npm install
+-----
 
-# Start development server
-npm run dev
+## 🖼️ Screenshots
 
-# Run tests
-npm test
-```
+*(You can add screenshots of your application here to give a visual overview.)*
 
-## License
+| Dashboard                               | Person Profile                          |
+| --------------------------------------- | --------------------------------------- |
+| |   |
 
-MIT License
+-----
+
+## 📜 License
+
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
