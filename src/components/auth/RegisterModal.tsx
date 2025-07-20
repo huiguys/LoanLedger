@@ -9,7 +9,7 @@ interface RegisterModalProps {
 }
 
 const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onSwitchToLogin }) => {
-  const { register, verifyOTP, setPassword } = useAuth();
+  const { sendOTP, verifyOTP, completeRegistration, login } = useAuth();
   const [step, setStep] = useState<'mobile' | 'otp' | 'password'>('mobile');
   const [formData, setFormData] = useState({
     mobileNumber: '',
@@ -26,17 +26,16 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onSwitch
     e.preventDefault();
     setIsLoading(true);
     setError('');
-
     try {
-      const result = await register(formData.mobileNumber);
+      const result = await sendOTP(formData.mobileNumber);
       if (result.success) {
         setStep('otp');
-        setSuccess('OTP sent to your mobile number');
+        setSuccess('OTP sent successfully. Check the server console.');
       } else {
-        setError(result.message);
+        setError(result.message || 'Failed to send OTP.');
       }
-    } catch (error) {
-      setError('Registration failed. Please try again.');
+    } catch (err) {
+      setError('An unexpected error occurred.');
     } finally {
       setIsLoading(false);
     }
@@ -46,17 +45,16 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onSwitch
     e.preventDefault();
     setIsLoading(true);
     setError('');
-
     try {
       const result = await verifyOTP(formData.mobileNumber, formData.otp);
       if (result.success) {
         setStep('password');
-        setSuccess('OTP verified successfully');
+        setSuccess('OTP verified successfully. Please set your password.');
       } else {
-        setError(result.message);
+        setError(result.message || 'OTP verification failed.');
       }
-    } catch (error) {
-      setError('OTP verification failed. Please try again.');
+    } catch (err) {
+      setError('An unexpected error occurred.');
     } finally {
       setIsLoading(false);
     }
@@ -64,43 +62,46 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onSwitch
 
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+      setError('Passwords do not match.');
       return;
     }
 
     setIsLoading(true);
     setError('');
-
     try {
-      const result = await setPassword(formData.password);
-      if (result.success) {
-        setSuccess('Registration completed successfully!');
+      // --- THIS IS THE FIX ---
+      // We now call `completeRegistration` and pass both the phoneNumber and password.
+      const result = await completeRegistration(formData.mobileNumber, formData.password);
+      if (result.success && result.token) {
+        setSuccess('Registration successful! You can now log in.');
+        // After 2 seconds, close this modal and switch to the login modal.
         setTimeout(() => {
           handleClose();
+          onSwitchToLogin();
         }, 2000);
       } else {
-        setError(result.message);
+        setError(result.message || 'Failed to complete registration.');
       }
-    } catch (error) {
-      setError('Failed to set password. Please try again.');
+    } catch (err) {
+      setError('An unexpected error occurred.');
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleClose = () => {
+    // Reset state when closing the modal
     setStep('mobile');
     setFormData({ mobileNumber: '', otp: '', password: '', confirmPassword: '' });
     setError('');
     setSuccess('');
-    setShowPassword(false);
     onClose();
   };
-
+  
   if (!isOpen) return null;
-
+  
+  // The rest of the JSX for the modal remains the same.
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg w-full max-w-md">

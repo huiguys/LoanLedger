@@ -193,3 +193,5 @@ const LoanCard: React.FC<LoanCardProps> = ({ loan, payments, onAddPayment, onMar
 };
 
 export default LoanCard;
+
+

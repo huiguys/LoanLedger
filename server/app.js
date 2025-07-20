@@ -1,78 +1,44 @@
 const express = require('express');
+const bodyParser = require('body-parser');
 const cors = require('cors');
+const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+require('dotenv').config();
 const authRoutes = require('./routes/auth');
 const database = require('./config/database');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Initialize database
-database.connect();
+// --- CORS Configuration ---
+// This is the crucial fix. We are telling the server to only accept
+// requests that come from your frontend application's address.
+const corsOptions = {
+  origin: 'http://localhost:5173', // Your frontend's origin
+  optionsSuccessStatus: 200 // For legacy browser support
+};
 
-// Security middleware
-app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-  credentials: true
-}));
+app.use(cors(corsOptions)); // Use the specific options
 
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
+// --- Other Middlewares ---
+app.use(helmet());
+app.use(express.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
-// Security headers
-app.use((req, res, next) => {
-  res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'DENY');
-  res.setHeader('X-XSS-Protection', '1; mode=block');
-  next();
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 20,
+    message: 'Too many requests from this IP, please try again after 15 minutes',
 });
 
-// Global rate limiting
-const globalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 1000, // limit each IP to 1000 requests per windowMs
-  message: {
-    success: false,
-    message: 'Too many requests from this IP, please try again later.'
-  }
+// --- Routes ---
+app.use('/api/auth', authLimiter, authRoutes);
+
+app.get('/', (req, res) => {
+    res.send('LoanLedger Auth Server is running!');
 });
 
-app.use(globalLimiter);
-
-// Routes
-app.use('/api/auth', authRoutes);
-
-// Health check endpoint
-app.get('/health', (req, res) => {
-  res.json({
-    success: true,
-    message: 'LoanLeger Auth Server is running',
-    timestamp: new Date().toISOString()
-  });
-});
-
-// 404 handler
-app.use('*', (req, res) => {
-  res.status(404).json({
-    success: false,
-    message: 'Endpoint not found'
-  });
-});
-
-// Global error handler
-app.use((err, req, res, next) => {
-  console.error('Global error handler:', err);
-  
-  res.status(err.status || 500).json({
-    success: false,
-    message: process.env.NODE_ENV === 'production' 
-      ? 'Internal server error' 
-      : err.message,
-    ...(process.env.NODE_ENV !== 'production' && { stack: err.stack })
-  });
-});
-
+// --- Start Server ---
 app.listen(PORT, () => {
-  console.log(`🚀 LoanLeger Auth Server running on port ${PORT}`);
-  console.log(`📱 Health check: http://localhost:${PORT}/health`);
+    console.log(`Server is running on http://localhost:${PORT}`);
 });
