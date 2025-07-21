@@ -4,14 +4,16 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const authRoutes = require('./routes/auth');
-const { connectDb } = require('./config/database'); // Import the connect function
+const { connectDb } = require('./config/database');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// --- Connect to the database first ---
+// --- Connect to the database as the first step ---
 connectDb();
 
+// CORS configuration to allow your frontend to make requests.
+// We will set the CORS_ORIGIN in the Render dashboard later.
 const corsOptions = {
   origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
   optionsSuccessStatus: 200
@@ -25,10 +27,12 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 20,
+    standardHeaders: true,
+    legacyHeaders: false,
     message: 'Too many requests from this IP, please try again after 15 minutes',
 });
 
-// --- Routes ---
+// --- API Routes ---
 app.use('/api/auth', authLimiter, authRoutes);
 
 app.get('/', (req, res) => {
