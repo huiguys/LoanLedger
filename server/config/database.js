@@ -1,8 +1,16 @@
 const { Client } = require('pg');
-require('dotenv').config();
+
+// Get the database URL from Render's environment variables
+const connectionString = process.env.DATABASE_URL;
+
+// If the DATABASE_URL is missing, exit with a clear error.
+if (!connectionString) {
+  console.error('FATAL: DATABASE_URL environment variable is not set.');
+  process.exit(1);
+}
 
 const client = new Client({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: connectionString,
   ssl: {
     rejectUnauthorized: false
   }
@@ -10,6 +18,9 @@ const client = new Client({
 
 client.connect()
   .then(() => console.log('Successfully connected to Supabase PostgreSQL database.'))
-  .catch(err => console.error('FATAL: Could not connect to the database.', err));
+  .catch(err => {
+    console.error('FATAL: Could not connect to the database.', err);
+    process.exit(1);
+  });
 
 module.exports = client;
