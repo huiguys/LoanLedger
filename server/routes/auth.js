@@ -109,7 +109,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-require('dotenv').config();
+// require('dotenv').config();
 const db = require('../config/database'); // This now points to your Supabase connection
 const { sendOtp, verifyOtp } = require('../utils/otp');
 const { validatePhoneNumber, validatePassword } = require('../utils/validation');
