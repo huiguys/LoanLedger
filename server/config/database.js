@@ -1,11 +1,16 @@
 const { Client } = require('pg');
 
-// Get the database URL from Render's environment variables
+// Log all available environment variables to see what Render is providing.
+// This is for debugging and will help us if there's still an issue.
+console.log('--- All Environment Variables ---');
+console.log(process.env);
+console.log('---------------------------------');
+
 const connectionString = process.env.DATABASE_URL;
 
-// If the DATABASE_URL is missing, exit with a clear error.
 if (!connectionString) {
-  console.error('FATAL: DATABASE_URL environment variable is not set.');
+  console.error('FATAL ERROR: DATABASE_URL environment variable was not found!');
+  // Exit the process immediately if the database URL is missing.
   process.exit(1);
 }
 
@@ -16,11 +21,18 @@ const client = new Client({
   }
 });
 
-client.connect()
-  .then(() => console.log('Successfully connected to Supabase PostgreSQL database.'))
-  .catch(err => {
+async function connectDb() {
+  try {
+    await client.connect();
+    console.log('Successfully connected to Supabase PostgreSQL database.');
+  } catch (err) {
     console.error('FATAL: Could not connect to the database.', err);
     process.exit(1);
-  });
+  }
+}
 
-module.exports = client;
+// Export the client and the connection function separately
+module.exports = {
+  client,
+  connectDb
+};
