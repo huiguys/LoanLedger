@@ -1,3 +1,42 @@
+// {
+//   "name": "loanleger-auth-server",
+//   "version": "1.0.0",
+//   "description": "Secure authentication server for LoanLeger application",
+//   "main": "app.js",
+//   "scripts": {
+//     "start": "node app.js",
+//     "dev": "nodemon app.js",
+//     "test": "jest"
+//   },
+//   "dependencies": {
+//     "@supabase/supabase-js": "^2.52.0",
+//     "bcryptjs": "^2.4.3",
+//     "cors": "^2.8.5",
+//     "express": "^4.18.2",
+//     "express-rate-limit": "^7.1.5",
+//     "express-validator": "^7.0.1",
+//     "helmet": "^8.1.0",
+//     "jsonwebtoken": "^9.0.2",
+//     "pg": "^8.16.3",
+//     "uuid": "^9.0.1"
+//   },
+//   "devDependencies": {
+//     "jest": "^29.7.0",
+//     "nodemon": "^3.0.2"
+//   },
+//   "keywords": [
+//     "authentication",
+//     "jwt",
+//     "otp",
+//     "mobile",
+//     "security"
+//   ],
+//   "author": "LoanLeger Team",
+//   "license": "MIT"
+// }
+
+
+
 {
   "name": "loanleger-auth-server",
   "version": "1.0.0",
@@ -17,7 +56,7 @@
     "express-validator": "^7.0.1",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
-    "pg": "^8.16.3",
+    "pg": "8.11.3",
     "uuid": "^9.0.1"
   },
   "devDependencies": {
