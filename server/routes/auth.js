@@ -1,12 +1,12 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { dbClient: db } = require('../config/database'); // Correctly import the database client
+const { dbClient: db } = require('../config/database');
 const { sendOtp, verifyOtp } = require('../utils/otp');
 const { validatePhoneNumber, validatePassword } = require('../utils/validation');
+const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
-
 const JWT_SECRET = process.env.JWT_SECRET;
 
 // 1. /register/send-otp
@@ -17,19 +17,14 @@ router.post('/register/send-otp', async (req, res) => {
         return res.status(400).json({ success: false, message: 'Invalid phone number format.' });
     }
     
-    if (!JWT_SECRET) {
-        console.error('FATAL: JWT_SECRET is not defined.');
-        return res.status(500).json({ success: false, message: 'Server configuration error.' });
-    }
-
     try {
-        // Use parameterized query for security
-        const userResult = await db.query('SELECT id FROM users WHERE phone_number = $1', [phoneNumber]);
+        const userResult = await db.query('SELECT id FROM users WHERE mobile_number = $1', [phoneNumber]);
         if (userResult.rows.length > 0) {
             return res.status(409).json({ success: false, message: 'User with this phone number already exists.' });
         }
         
-        sendOtp(phoneNumber); // This function still logs to console for debugging
+        // CORRECTED: Await the async sendOtp function
+        await sendOtp(phoneNumber); 
         res.status(200).json({ success: true, message: 'OTP sent successfully.' });
 
     } catch (err) {
@@ -39,11 +34,15 @@ router.post('/register/send-otp', async (req, res) => {
 });
 
 // 2. /register/verify-otp
-router.post('/register/verify-otp', (req, res) => {
+// CORRECTED: Make this route async to handle the database verification
+router.post('/register/verify-otp', async (req, res) => {
     const { phoneNumber, otp } = req.body;
-    if (!verifyOtp(phoneNumber, otp)) {
+    
+    const isValid = await verifyOtp(phoneNumber, otp);
+    if (!isValid) {
         return res.status(400).json({ success: false, message: 'Invalid or expired OTP.' });
     }
+    
     res.status(200).json({ success: true, message: 'OTP verified successfully.' });
 });
 
@@ -56,9 +55,8 @@ router.post('/register/complete', async (req, res) => {
 
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
-        // Use RETURNING id to get the new user's ID
         const result = await db.query(
-            'INSERT INTO users (phone_number, password) VALUES ($1, $2) RETURNING id',
+            'INSERT INTO users (mobile_number, password_hash) VALUES ($1, $2) RETURNING id',
             [phoneNumber, hashedPassword]
         );
         const newUser = result.rows[0];
@@ -67,7 +65,7 @@ router.post('/register/complete', async (req, res) => {
         res.status(201).json({ success: true, token });
     } catch (err) {
         console.error('Error in /register/complete:', err);
-        if (err.code === '23505') { // PostgreSQL unique violation error code
+        if (err.code === '23505') {
             return res.status(409).json({ success: false, message: 'User already exists.' });
         }
         res.status(500).json({ success: false, message: 'Server error.' });
@@ -78,14 +76,14 @@ router.post('/register/complete', async (req, res) => {
 router.post('/login', async (req, res) => {
     const { phoneNumber, password } = req.body;
     try {
-        const result = await db.query('SELECT * FROM users WHERE phone_number = $1', [phoneNumber]);
+        const result = await db.query('SELECT * FROM users WHERE mobile_number = $1', [phoneNumber]);
         const user = result.rows[0];
         
         if (!user) {
             return res.status(401).json({ success: false, message: 'Invalid credentials.' });
         }
 
-        const isMatch = await bcrypt.compare(password, user.password);
+        const isMatch = await bcrypt.compare(password, user.password_hash);
         if (!isMatch) {
             return res.status(401).json({ success: false, message: 'Invalid credentials.' });
         }
@@ -96,6 +94,14 @@ router.post('/login', async (req, res) => {
         console.error('Error in /login:', err);
         res.status(500).json({ success: false, message: 'Server error.' });
     }
+});
+
+// 5. /me - Get current user info
+router.get('/me', authenticateToken, (req, res) => {
+    res.status(200).json({
+        id: req.user.id,
+        mobileNumber: req.user.mobileNumber
+    });
 });
 
 module.exports = router;

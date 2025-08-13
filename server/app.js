@@ -1,19 +1,18 @@
+require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const authRoutes = require('./routes/auth');
+const dataRoutes = require('./routes/data'); // <-- ADD THIS LINE
 const { connectDb } = require('./config/database');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// --- Connect to the database as the first step ---
 connectDb();
 
-// CORS configuration to allow your frontend to make requests.
-// We will set the CORS_ORIGIN in the Render dashboard later.
 const corsOptions = {
   origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
   optionsSuccessStatus: 200
@@ -34,12 +33,12 @@ const authLimiter = rateLimit({
 
 // --- API Routes ---
 app.use('/api/auth', authLimiter, authRoutes);
+app.use('/api/data', dataRoutes); // <-- ADD THIS LINE
 
 app.get('/', (req, res) => {
     res.send('LoanLedger Auth Server is running!');
 });
 
-// --- Start Server ---
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });

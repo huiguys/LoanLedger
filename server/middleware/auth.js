@@ -1,70 +1,6 @@
-// const { verifyAccessToken } = require('../config/jwt');
-// const database = require('../config/database');
-
-// const authenticateToken = async (req, res, next) => {
-//   try {
-//     const authHeader = req.headers['authorization'];
-//     const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
-
-//     if (!token) {
-//       return res.status(401).json({
-//         success: false,
-//         message: 'Access token required'
-//       });
-//     }
-
-//     const decoded = verifyAccessToken(token);
-    
-//     // Verify user still exists
-//     const user = await database.get(
-//       'SELECT id, mobile_number, is_verified FROM users WHERE id = ?',
-//       [decoded.userId]
-//     );
-
-//     if (!user) {
-//       return res.status(401).json({
-//         success: false,
-//         message: 'User not found'
-//       });
-//     }
-
-//     req.user = {
-//       id: user.id,
-//       mobileNumber: user.mobile_number,
-//       isVerified: user.is_verified
-//     };
-
-//     next();
-//   } catch (error) {
-//     return res.status(403).json({
-//       success: false,
-//       message: 'Invalid or expired token'
-//     });
-//   }
-// };
-
-// const requireVerification = (req, res, next) => {
-//   if (!req.user.isVerified) {
-//     return res.status(403).json({
-//       success: false,
-//       message: 'Account verification required'
-//     });
-//   }
-//   next();
-// };
-
-// module.exports = {
-//   authenticateToken,
-//   requireVerification
-// };
-
-
-
-
-
-
 const { verifyAccessToken } = require('../config/jwt');
-const database = require('../config/database');
+// CORRECTED: Import the database client correctly
+const { dbClient: db } = require('../config/database');
 
 const authenticateToken = async (req, res, next) => {
   try {
@@ -79,11 +15,13 @@ const authenticateToken = async (req, res, next) => {
     }
 
     const decoded = verifyAccessToken(token);
-
+    
     // Verify user still exists
-    const result = await database.query(
-      'SELECT id, mobile_number, is_verified FROM users WHERE id = $1',
-      [decoded.userId]
+    // CORRECTED: Use the correct database client variable 'db'
+    const result = await db.query(
+      'SELECT id, mobile_number FROM users WHERE id = $1',
+      // CORRECTED: The token payload has 'id', not 'userId'
+      [decoded.id] 
     );
     const user = result.rows[0];
 
@@ -97,7 +35,6 @@ const authenticateToken = async (req, res, next) => {
     req.user = {
       id: user.id,
       mobileNumber: user.mobile_number,
-      isVerified: user.is_verified
     };
 
     next();
@@ -109,17 +46,6 @@ const authenticateToken = async (req, res, next) => {
   }
 };
 
-const requireVerification = (req, res, next) => {
-  if (!req.user.isVerified) {
-    return res.status(403).json({
-      success: false,
-      message: 'Account verification required'
-    });
-  }
-  next();
-};
-
 module.exports = {
-  authenticateToken,
-  requireVerification
+  authenticateToken
 };
